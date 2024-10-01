@@ -25,3 +25,14 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/images/one-key.jpg
+    - assets/images/shield-blue.jpg
+    - assets/images/shield-pink.jpg
+    - assets/images/two-keys.jpg
+
+  fonts:
+    - family: GreatVibes
+      fonts:
+        - asset: assets/fonts/GreatVibes-Regular.ttf
