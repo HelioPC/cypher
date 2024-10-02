@@ -1,20 +1,37 @@
+import 'package:cypher/presentation/encryption/aes/aes_screen.dart';
+import 'package:cypher/presentation/encryption/rsa/rsa_screen.dart';
+import 'package:cypher/presentation/home/home_screen.dart';
+import 'package:cypher/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const MainApp());
+  runApp(CypherApp());
 }
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+class CypherApp extends StatelessWidget {
+  CypherApp({super.key});
+
+  final ThemeData theme = ThemeData(
+    brightness: Brightness.dark,
+  );
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Text('Hello World!'),
+    return MaterialApp(
+      title: 'Cypher App',
+      debugShowCheckedModeBanner: false,
+      themeMode: ThemeMode.dark,
+      theme: theme.copyWith(
+        colorScheme: theme.colorScheme.copyWith(
+          primary: Colors.green,
+          secondary: Colors.amber,
         ),
       ),
+      routes: {
+        AppRoutes.homeScreen: (context) => const HomeScreen(),
+        AppRoutes.aesScreen: (context) => const AesScreen(),
+        AppRoutes.rsaScreen: (context) => const RsaScreen(),
+      },
     );
   }
 }
