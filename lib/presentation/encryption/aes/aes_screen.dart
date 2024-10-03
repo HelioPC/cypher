@@ -1,15 +1,19 @@
+import 'package:cypher/presentation/encryption/aes/provider/aes_screen_notifier.dart';
+import 'package:cypher/presentation/encryption/aes/widgets/edit_text_to_encrypt.dart';
+import 'package:cypher/presentation/encryption/aes/widgets/show_keys.dart';
+import 'package:cypher/services/crypto_service.dart';
+import 'package:cypher/utils/show_modal_bottom_sheet.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AesScreen extends StatefulWidget {
+class AesScreen extends ConsumerWidget {
   const AesScreen({super.key});
 
   @override
-  State<AesScreen> createState() => _AesScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(aesScreenNotifierProvider);
+    final notifier = ref.watch(aesScreenNotifierProvider.notifier);
 
-class _AesScreenState extends State<AesScreen> {
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
@@ -19,41 +23,15 @@ class _AesScreenState extends State<AesScreen> {
             title: const Text('Criptografia simétrica'),
             actions: [
               IconButton(
-                onPressed: () {
-                  showModalBottomSheet(
+                onPressed: () async {
+                  await showCustomModalBottomSheet(
                     context: context,
-                    showDragHandle: true,
-                    useRootNavigator: true,
-                    isScrollControlled: true,
-                    useSafeArea: true,
-                    builder: (context) {
-                      return Padding(
-                        padding: EdgeInsets.only(
-                          bottom: MediaQuery.viewInsetsOf(context).bottom,
-                        ),
-                        child: const SizedBox(
-                          width: double.infinity,
-                          height: 200,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'AES key',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              SizedBox(height: 24),
-                              Text(
-                                'aidnffpcmfejjckekmfkfffc-fs=a=2##jrnfo/jalaodpaq-|opcvvsmlartew=(',
-                                textAlign: TextAlign.center,
-                              )
-                            ],
-                          ),
-                        ),
-                      );
-                    },
+                    child: ShowKeys(
+                      title1: 'Chave AES',
+                      key1: state.aesKey,
+                      title2: 'IV',
+                      key2: state.iv,
+                    ),
                   );
                 },
                 icon: const Icon(Icons.visibility),
@@ -88,57 +66,21 @@ class _AesScreenState extends State<AesScreen> {
                         ),
                         const SizedBox(height: 28),
                         GestureDetector(
-                          onTap: () {
-                            showModalBottomSheet(
+                          onTap: () async {
+                            await showCustomModalBottomSheet(
                               context: context,
-                              showDragHandle: true,
-                              useRootNavigator: true,
-                              isScrollControlled: true,
-                              useSafeArea: true,
-                              builder: (context) {
-                                return Padding(
-                                  padding: EdgeInsets.only(
-                                    bottom:
-                                        MediaQuery.viewInsetsOf(context).bottom,
-                                  ),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      TextField(
-                                        maxLines: 10,
-                                        maxLength: 250,
-                                        onTapOutside: (_) =>
-                                            FocusScope.of(context).unfocus(),
-                                        decoration: InputDecoration(
-                                          filled: true,
-                                          fillColor:
-                                              Colors.grey.withOpacity(.1),
-                                          hintText:
-                                              'Texto a ser criptografado...',
-                                          hintStyle: TextStyle(
-                                            color: Colors.grey[600],
-                                          ),
-                                          border: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                            borderSide: BorderSide.none,
-                                          ),
-                                        ),
-                                        onChanged: (_) => setState(() {}),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
+                              child: EditTextToEncrypt(
+                                textToEncrypt: state.textToEncrypt,
+                              ),
                             );
                           },
-                          child: const SizedBox(
+                          child: SizedBox(
                             width: double.infinity,
                             child: Card(
                               child: Padding(
-                                padding: EdgeInsets.all(20.0),
+                                padding: const EdgeInsets.all(20.0),
                                 child: Text(
-                                  textToEncrypt,
+                                  state.textToEncrypt,
                                   textAlign: TextAlign.center,
                                 ),
                               ),
@@ -156,13 +98,13 @@ class _AesScreenState extends State<AesScreen> {
                           ),
                         ),
                         const SizedBox(height: 24),
-                        const SizedBox(
+                        SizedBox(
                           width: double.infinity,
                           child: Card(
                             child: Padding(
-                              padding: EdgeInsets.all(20.0),
+                              padding: const EdgeInsets.all(20.0),
                               child: Text(
-                                '',
+                                state.encryptedText,
                                 textAlign: TextAlign.center,
                               ),
                             ),
@@ -178,21 +120,57 @@ class _AesScreenState extends State<AesScreen> {
                             ),
                           ),
                         ),
+                        const ExpansionTile(
+                          leading: Icon(Icons.visibility),
+                          title: Text('Nota importante'),
+                          children: [
+                            Text(
+                              'Para garantir com que a criptografia simétrica gere um payload (texto criptografado) diferente, usando a mesma chave (AES) e o mesmo texto, usamos um IV (vetor de inicialização) sempre que o utilizador encripta o texto.',
+                            )
+                          ],
+                        ),
                       ],
                     ),
                   ),
                   SafeArea(
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment:
+                          (notifier.canEncrypt || notifier.canDecrypt)
+                              ? MainAxisAlignment.spaceBetween
+                              : MainAxisAlignment.center,
                       children: [
                         ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            final aesKey = CryptoService.generateAESKey();
+
+                            ref
+                                .read(aesScreenNotifierProvider.notifier)
+                                .setAesKey(aesKey);
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                duration: Duration(seconds: 2),
+                                content: Text(
+                                  'Chave gerada com sucesso.',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
                           child: const Text('Gerar chave AES'),
                         ),
-                        ElevatedButton(
-                          onPressed: () {},
-                          child: const Text('Encriptar texto'),
-                        ),
+                        if (notifier.canEncrypt || notifier.canDecrypt) ...[
+                          ElevatedButton(
+                            onPressed: () {
+                              ref
+                                  .read(aesScreenNotifierProvider.notifier)
+                                  .encryptText();
+                            },
+                            child: const Text('Encriptar texto'),
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -205,6 +183,3 @@ class _AesScreenState extends State<AesScreen> {
     );
   }
 }
-
-const textToEncrypt =
-    'Eu sou o Eliude Vemba, e eu desenvolvi esta aplicação do zero';

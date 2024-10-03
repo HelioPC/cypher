@@ -3,9 +3,10 @@ import 'package:cypher/presentation/encryption/rsa/rsa_screen.dart';
 import 'package:cypher/presentation/home/home_screen.dart';
 import 'package:cypher/routes/app_routes.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {
-  runApp(CypherApp());
+  runApp(ProviderScope(child: CypherApp()));
 }
 
 class CypherApp extends StatelessWidget {
@@ -22,9 +23,14 @@ class CypherApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.dark,
       theme: theme.copyWith(
+        dividerColor: Colors.transparent,
         colorScheme: theme.colorScheme.copyWith(
           primary: Colors.green,
           secondary: Colors.amber,
+        ),
+        snackBarTheme: SnackBarThemeData(
+          backgroundColor: Colors.grey[800],
+          actionTextColor: Colors.white,
         ),
       ),
       routes: {
