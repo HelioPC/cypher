@@ -86,10 +86,15 @@ class AesScreen extends ConsumerWidget {
                             width: double.infinity,
                             child: Card(
                               child: Padding(
-                                padding: const EdgeInsets.all(20.0),
+                                padding: const EdgeInsets.all(12.0),
                                 child: Text(
                                   state.textToEncrypt,
                                   textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    fontFamily: 'GreatVibes',
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 20,
+                                  ),
                                 ),
                               ),
                             ),
