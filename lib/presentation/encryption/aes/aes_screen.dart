@@ -3,6 +3,7 @@ import 'package:cypher/presentation/widgets/edit_text_to_encrypt.dart';
 import 'package:cypher/presentation/widgets/show_keys.dart';
 import 'package:cypher/services/crypto_service.dart';
 import 'package:cypher/utils/show_modal_bottom_sheet.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -168,7 +169,7 @@ class AesScreen extends ConsumerWidget {
                           },
                           child: const Text('Gerar chave AES'),
                         ),
-                        if (notifier.canEncrypt || notifier.canDecrypt) ...[
+                        if (notifier.canEncrypt) ...[
                           ElevatedButton(
                             onPressed: () {
                               ref
@@ -176,6 +177,33 @@ class AesScreen extends ConsumerWidget {
                                   .encryptText();
                             },
                             child: const Text('Encriptar texto'),
+                          ),
+                        ],
+                        if (notifier.canDecrypt) ...[
+                          ElevatedButton(
+                            onPressed: () {
+                              final result = ref
+                                  .read(aesScreenNotifierProvider.notifier)
+                                  .decryptText();
+
+                              showAdaptiveDialog(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog.adaptive(
+                                    content: Column(children: [Text(result)]),
+                                    actions: [
+                                      CupertinoDialogAction(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: const Text('Ok'),
+                                      )
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                            child: const Text('Decriptar texto'),
                           ),
                         ],
                       ],
