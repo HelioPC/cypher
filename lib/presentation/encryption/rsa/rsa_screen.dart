@@ -1,6 +1,6 @@
-import 'package:cypher/presentation/encryption/aes/widgets/show_keys.dart';
+import 'package:cypher/presentation/widgets/edit_text_to_encrypt.dart';
+import 'package:cypher/presentation/widgets/show_keys.dart';
 import 'package:cypher/presentation/encryption/rsa/provider/rsa_screen_notifier.dart';
-import 'package:cypher/presentation/encryption/rsa/widgets/edit_text_to_encrypt.dart';
 import 'package:cypher/utils/show_modal_bottom_sheet.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -23,8 +23,8 @@ class RsaScreen extends ConsumerWidget {
             title: const Text('Criptografia assimétrica'),
             actions: [
               IconButton(
-                onPressed: () {
-                  showCustomModalBottomSheet(
+                onPressed: () async {
+                  await showCustomModalBottomSheet(
                     context: context,
                     child: ShowKeys(
                       title1: 'Chave pública',
@@ -66,11 +66,18 @@ class RsaScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 28),
                         GestureDetector(
-                          onTap: () {
-                            showCustomModalBottomSheet(
+                          onTap: () async {
+                            await showCustomModalBottomSheet(
                               context: context,
                               child: EditTextToEncrypt(
                                 textToEncrypt: state.textToEncrypt,
+                                onSubmitted: (value) {
+                                  ref
+                                      .read(rsaScreenNotifierProvider.notifier)
+                                      .setTextToEncrypt(value);
+
+                                  Navigator.of(context).pop();
+                                },
                               ),
                             );
                           },

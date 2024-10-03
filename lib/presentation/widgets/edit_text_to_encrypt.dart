@@ -1,11 +1,15 @@
-import 'package:cypher/presentation/encryption/aes/provider/aes_screen_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class EditTextToEncrypt extends ConsumerWidget {
-  const EditTextToEncrypt({super.key, required this.textToEncrypt});
+  const EditTextToEncrypt({
+    super.key,
+    required this.textToEncrypt,
+    required this.onSubmitted,
+  });
 
   final String textToEncrypt;
+  final Function(String) onSubmitted;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -33,13 +37,7 @@ class EditTextToEncrypt extends ConsumerWidget {
                 borderSide: BorderSide.none,
               ),
             ),
-            onSubmitted: (value) {
-              ref
-                  .read(aesScreenNotifierProvider.notifier)
-                  .setTextToEncrypt(value);
-
-              Navigator.of(context).pop();
-            },
+            onSubmitted: onSubmitted,
           ),
         ],
       ),

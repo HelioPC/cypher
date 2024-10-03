@@ -19,6 +19,7 @@ class ShowKeys extends StatelessWidget {
     return SafeArea(
       child: ConstrainedBox(
         constraints: const BoxConstraints(
+          minWidth: double.infinity,
           minHeight: 200,
           maxHeight: 350,
         ),

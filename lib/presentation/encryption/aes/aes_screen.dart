@@ -1,6 +1,6 @@
 import 'package:cypher/presentation/encryption/aes/provider/aes_screen_notifier.dart';
-import 'package:cypher/presentation/encryption/aes/widgets/edit_text_to_encrypt.dart';
-import 'package:cypher/presentation/encryption/aes/widgets/show_keys.dart';
+import 'package:cypher/presentation/widgets/edit_text_to_encrypt.dart';
+import 'package:cypher/presentation/widgets/show_keys.dart';
 import 'package:cypher/services/crypto_service.dart';
 import 'package:cypher/utils/show_modal_bottom_sheet.dart';
 import 'package:flutter/material.dart';
@@ -71,6 +71,13 @@ class AesScreen extends ConsumerWidget {
                               context: context,
                               child: EditTextToEncrypt(
                                 textToEncrypt: state.textToEncrypt,
+                                onSubmitted: (value) {
+                                  ref
+                                      .read(aesScreenNotifierProvider.notifier)
+                                      .setTextToEncrypt(value);
+
+                                  Navigator.of(context).pop();
+                                },
                               ),
                             );
                           },

@@ -52,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       SizedBox(height: 20),
                       Text(
-                        'é uma área da criptologia que estuda e pratica princípios e técnicas para comunicação segura na presença de terceiros, chamados "adversários"',
+                        'é a área que estuda e pratica princípios e técnicas para comunicação segura na presença de terceiros, chamados "adversários"',
                       ),
                     ],
                   ),
