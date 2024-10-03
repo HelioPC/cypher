@@ -9,11 +9,15 @@ sealed class CryptoService {
   }
 
   static Map<String, String> generateRSAKeys() {
-    final keys = CryptoUtils.generateRSAKeyPair();
+    final keys = CryptoUtils.generateRSAKeyPair(keySize: 1024);
 
     return {
-      'publicKey': keys.publicKey.toString(),
-      'privatKey': keys.privateKey.toString(),
+      'publicKey': CryptoUtils.encodeRSAPublicKeyToPem(
+        (keys.publicKey as RSAPublicKey),
+      ),
+      'privateKey': CryptoUtils.encodeRSAPrivateKeyToPem(
+        (keys.privateKey as RSAPrivateKey),
+      ),
     };
   }
 
