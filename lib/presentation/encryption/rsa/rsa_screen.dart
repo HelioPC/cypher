@@ -1,15 +1,19 @@
+import 'package:cypher/presentation/encryption/aes/widgets/show_keys.dart';
+import 'package:cypher/presentation/encryption/rsa/provider/rsa_screen_notifier.dart';
+import 'package:cypher/presentation/encryption/rsa/widgets/edit_text_to_encrypt.dart';
+import 'package:cypher/utils/show_modal_bottom_sheet.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class RsaScreen extends StatefulWidget {
+class RsaScreen extends ConsumerWidget {
   const RsaScreen({super.key});
 
   @override
-  State<RsaScreen> createState() => _RsaScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(rsaScreenNotifierProvider);
+    final notifier = ref.watch(rsaScreenNotifierProvider.notifier);
 
-class _RsaScreenState extends State<RsaScreen> {
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
@@ -20,48 +24,14 @@ class _RsaScreenState extends State<RsaScreen> {
             actions: [
               IconButton(
                 onPressed: () {
-                  showModalBottomSheet(
+                  showCustomModalBottomSheet(
                     context: context,
-                    showDragHandle: true,
-                    useRootNavigator: true,
-                    isScrollControlled: true,
-                    useSafeArea: true,
-                    builder: (context) {
-                      return Padding(
-                        padding: EdgeInsets.only(
-                          bottom: MediaQuery.viewInsetsOf(context).bottom,
-                        ),
-                        child: const Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              'Chave pública',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            SizedBox(height: 24),
-                            Text(
-                              'aidnffpcmfejjckekmfkfffc-fs=a=2##jrnfo/jalaodpaq-|opcvvsmlartew=(',
-                              textAlign: TextAlign.center,
-                            ),
-                            Text(
-                              'Chave privada',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            SizedBox(height: 24),
-                            Text(
-                              'aidnffpcmfejjckekmfkfffc-fs=a=2##jrnfo/jalaodpaq-|opcvvsmlartew=(',
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      );
-                    },
+                    child: ShowKeys(
+                      title1: 'Chave pública',
+                      key1: state.publicKey,
+                      title2: 'Chave privada',
+                      key2: state.privateKey,
+                    ),
                   );
                 },
                 icon: const Icon(Icons.visibility),
@@ -97,56 +67,20 @@ class _RsaScreenState extends State<RsaScreen> {
                         const SizedBox(height: 28),
                         GestureDetector(
                           onTap: () {
-                            showModalBottomSheet(
+                            showCustomModalBottomSheet(
                               context: context,
-                              showDragHandle: true,
-                              useRootNavigator: true,
-                              isScrollControlled: true,
-                              useSafeArea: true,
-                              builder: (context) {
-                                return Padding(
-                                  padding: EdgeInsets.only(
-                                    bottom:
-                                        MediaQuery.viewInsetsOf(context).bottom,
-                                  ),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      TextField(
-                                        maxLines: 10,
-                                        maxLength: 250,
-                                        onTapOutside: (_) =>
-                                            FocusScope.of(context).unfocus(),
-                                        decoration: InputDecoration(
-                                          filled: true,
-                                          fillColor:
-                                              Colors.grey.withOpacity(.1),
-                                          hintText:
-                                              'Texto a ser criptografado...',
-                                          hintStyle: TextStyle(
-                                            color: Colors.grey[600],
-                                          ),
-                                          border: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                            borderSide: BorderSide.none,
-                                          ),
-                                        ),
-                                        onChanged: (_) => setState(() {}),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
+                              child: EditTextToEncrypt(
+                                textToEncrypt: state.textToEncrypt,
+                              ),
                             );
                           },
-                          child: const SizedBox(
+                          child: SizedBox(
                             width: double.infinity,
                             child: Card(
                               child: Padding(
-                                padding: EdgeInsets.all(20.0),
+                                padding: const EdgeInsets.all(20.0),
                                 child: Text(
-                                  textToEncrypt,
+                                  state.textToEncrypt,
                                   textAlign: TextAlign.center,
                                 ),
                               ),
@@ -164,13 +98,13 @@ class _RsaScreenState extends State<RsaScreen> {
                           ),
                         ),
                         const SizedBox(height: 24),
-                        const SizedBox(
+                        SizedBox(
                           width: double.infinity,
                           child: Card(
                             child: Padding(
-                              padding: EdgeInsets.all(20.0),
+                              padding: const EdgeInsets.all(20.0),
                               child: Text(
-                                '',
+                                state.encryptedText,
                                 textAlign: TextAlign.center,
                               ),
                             ),
@@ -191,16 +125,68 @@ class _RsaScreenState extends State<RsaScreen> {
                   ),
                   SafeArea(
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment:
+                          (notifier.canEncrypt || notifier.canDecrypt)
+                              ? MainAxisAlignment.spaceBetween
+                              : MainAxisAlignment.center,
                       children: [
                         ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            ref
+                                .read(rsaScreenNotifierProvider.notifier)
+                                .generateKeys();
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                duration: Duration(seconds: 2),
+                                content: Text(
+                                  'Chave gerada com sucesso.',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
                           child: const Text('Gerar par de chaves'),
                         ),
-                        ElevatedButton(
-                          onPressed: () {},
-                          child: const Text('Encriptar texto'),
-                        ),
+                        if (notifier.canEncrypt) ...[
+                          ElevatedButton(
+                            onPressed: () {
+                              ref
+                                  .read(rsaScreenNotifierProvider.notifier)
+                                  .encryptText();
+                            },
+                            child: const Text('Encriptar texto'),
+                          ),
+                        ],
+                        if (notifier.canDecrypt) ...[
+                          ElevatedButton(
+                            onPressed: () {
+                              final result = ref
+                                  .read(rsaScreenNotifierProvider.notifier)
+                                  .decryptText();
+
+                              showAdaptiveDialog(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog.adaptive(
+                                    content: Column(children: [Text(result)]),
+                                    actions: [
+                                      CupertinoDialogAction(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: const Text('Ok'),
+                                      )
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                            child: const Text('Decriptar texto'),
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -213,6 +199,3 @@ class _RsaScreenState extends State<RsaScreen> {
     );
   }
 }
-
-const textToEncrypt =
-    'Eu sou o Eliude Vemba, e eu desenvolvi esta aplicação do zero';
